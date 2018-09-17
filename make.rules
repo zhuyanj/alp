@@ -1,0 +1,19 @@
+ifneq ($(SRCS_DIR), )
+SRCS:=$(addprefix $(SRCS_DIR)/, $(SRCS))
+endif
+SRCS = $(wildcard *.c)
+EXES = $(SRCS:%.c=%)
+
+
+all:$(EXES)
+
+%:%.c
+	gcc -Wall -g -o $@ $^ $(LIBS)
+#$(wildcard EXES):$(wildcard SRCS)
+#$(wildcard $(EXES)):$(wildcard $(SRCS))
+#$(wildcard EXES):$(wildcard SRCS)
+#	gcc -Wall -g -o $@ $^ 
+.PHONY :clean
+clean:
+	rm -rf $(EXES)
+

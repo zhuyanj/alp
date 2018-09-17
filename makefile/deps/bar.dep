@@ -1,0 +1,1 @@
+objs/bar.o: bar.c

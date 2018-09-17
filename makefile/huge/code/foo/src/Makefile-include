@@ -1,0 +1,100 @@
+# $@ 表示一个规则中的目标
+# $^ 表示规则中所有的先决条件
+# $< 表示规则中的第一个先决条件  
+# $(MAKECMDGOALS 表示用户输入的目标
+# $(CURDIR) 表示当前目录
+.PHONY:all clean
+
+MKDIR = mkdir
+RM = rm
+RMFLAGS= -rf
+
+CC = gcc
+AR = ar
+ARFLAGS = crs
+
+DIR_OBJS = objs
+DIR_EXES = $(ROOT)/build/exes
+DIR_DEPS = deps
+DIR_LIBS = $(ROOT)/build/libs
+INCLUDE_DIRS = ../inc
+
+DIRS = $(DIR_OBJS) $(DIR_EXES) $(DIR_DEPS) $(DIR_LIBS)
+RMS = $(DIR_OBJS) $(DIR_DEPS)
+
+ifneq ($(EXE),)
+EXE := $(addprefix $(DIR_EXES)/, $(EXE))
+RMS += $(EXE)
+endif
+
+ifneq ($(LIB),)
+LIB := $(addprefix $(DIR_LIBS)/, $(LIB))
+RM += $(LIB)
+endif
+
+SRCS=$(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+OBJS := $(addprefix $(DIR_OBJS)/, $(OBJS))
+DEPS = $(SRCS:.c=.dep)
+DEPS := $(addprefix $(DIR_DEPS)/, $(DEPS))
+
+ifeq ($(wildcard $(DIR_OBJS)), )
+DEP_DIR_OBJS := $(DIR_OBJS)
+endif
+ifeq ($(wildcard $(DIR_EXES)), )
+DEP_DIR_EXES := $(DIR_EXES)
+endif
+ifeq ($(wildcard $(DIR_DEPS)), )
+DEP_DIR_DEPS := $(DIR_DEPS)
+endif
+ifeq ($(wildcard $(DIR_LIBS)), )
+DEP_DIR_LIBS := $(DIR_LIBS)
+endif
+
+all: $(EXE) $(LIB)
+ifneq ($(MAKECMDGOALS), clean)
+sinclude $(DEPS)
+endif
+
+ifneq ($(INCLUDE_DIRS),)
+INCLUDE_DIRS := $(strip $(INCLUDE_DIRS))
+INCLUDE_DIRS := $(addprefix -I, $(INCLUDE_DIRS))
+endif
+
+$(DIRS):
+	$(MKDIR) $@
+
+$(EXE):$(DEP_DIR_EXES) $(OBJS)
+	$(CC) -o $@ $(filter %.o, $^)
+$(LIB):$(DEP_DIR_LIBS) $(OBJS)
+	$(AR) $(ARFLAGS) $@ $(filter %.o, $^)
+$(DIR_OBJS)/%.o : $(DEP_DIR_OBJS) %.c
+	$(CC) $(INCLUDE_DIRS) -o $@ -c $(filter %.c, $^)
+$(DIR_DEPS)/%.dep:$(DEP_DIR_DEPS) %.c
+	@echo "Creating $@ ..."
+	@set -e;\
+	$(RM) $(RMFLAGS) $@.tmp;\
+	$(CC) $(INCLUDE_DIRS) -E -MM $(filter %.c, $^) > $@.tmp;\
+	sed 's,\(.*\)\.o[:]*,objs/\1.o:,g' <$@.tmp >$@;\
+	$(RM) $(RMFLAGS) $@.tmp
+
+.PHONY: clean
+clean:
+	$(RM) $(RMFLAGS) $(RMS)
+
+echo:
+	@echo $(OBJS)
+	@echo $(INCLUDE_DIRS)
+
+.PHONY:auto_val
+auto_val:first second third
+	@echo "\$$@ = $@"
+	@echo "$$^ = $^"
+	@echo "$$< = $<"
+first second third:
+
+.PHONY: makecmdgoals @
+makecmdgoals @:
+	@echo "\$$@ = $@"
+	@echo "MAKECMDGOALS = $(MAKECMDGOALS)"
+	@echo "CURDIR = $(CURDIR)"

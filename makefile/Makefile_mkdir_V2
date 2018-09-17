@@ -1,0 +1,50 @@
+# $@ 表示一个规则中的目标
+# $^ 表示规则中所有的先决条件
+# $< 表示规则中的第一个先决条件  
+# $(MAKECMDGOALS 表示用户输入的目标
+# $(CURDIR) 表示当前目录
+.PHONY:all clean
+MKDIR = mkdir
+CC = gcc
+RM = rm
+RMFLAGS= -rf
+
+DIR_OBJS = objs
+DIR_EXES = exes
+DIRS = $(DIR_OBJS) $(DIR_EXES)
+EXE = simple
+SRCS=$(wildcard *.c)
+#OBJS = $(patsubst %.c, %.o, $(SRCS))
+OBJS = $(SRCS:.c=.o)
+OBJS := $(addprefix $(DIR_OBJS)/, $(OBJS))
+all:$(DIRS) $(DIR_EXES)/$(EXE)
+$(DIRS):
+	$(MKDIR) $@
+$(DIR_EXES)/$(EXE):$(OBJS)
+	$(CC) -o $@ $^
+#main.o:main.c
+#	$(CC) -o main.o -c main.c
+#foo.o:foo.c
+#	$(CC) -o foo.o -c foo.c
+$(DIR_OBJS)/%.o : %.c
+	$(CC) -o $@ -c $^
+
+.PHONY: clean
+clean:
+	$(RM) $(RMFLAGS) $(EXE) $(DIRS)
+
+echo:
+	@echo $(OBJS)
+
+.PHONY:auto_val
+auto_val:first second third
+	@echo "\$$@ = $@"
+	@echo "$$^ = $^"
+	@echo "$$< = $<"
+first second third:
+
+.PHONY: makecmdgoals @
+makecmdgoals @:
+	@echo "\$$@ = $@"
+	@echo "MAKECMDGOALS = $(MAKECMDGOALS)"
+	@echo "CURDIR = $(CURDIR)"

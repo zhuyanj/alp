@@ -1,0 +1,13 @@
+SRCS = $(wildcard *.c)
+EXES = $(SRCS:%.c=%)
+all:$(EXES)
+
+%:%.c
+	gcc -Wall -g -o $@ $^ 
+#$(wildcard EXES):$(wildcard SRCS)
+#$(wildcard $(EXES)):$(wildcard $(SRCS))
+#$(wildcard EXES):$(wildcard SRCS)
+#	gcc -Wall -g -o $@ $^ 
+.PHONY :clean
+clean:
+	rm -rf $(EXES)

@@ -1,0 +1,38 @@
+# $@ 表示一个规则中的目标
+# $^ 表示规则中所有的先决条件
+# $< 表示规则中的第一个先决条件  
+# $(MAKECMDGOALS 表示用户输入的目标
+# $(CURDIR) 表示当前目录
+
+CC = gcc
+RM = rm
+
+EXE = simple
+SRCS=$(wildcard *.c)
+OBJS = $(patsubst %.c, %.o, $(SRCS))
+
+$(EXE):$(OBJS)
+	$(CC) -o $(EXE) $(OBJS)
+#main.o:main.c
+#	$(CC) -o main.o -c main.c
+#foo.o:foo.c
+#	$(CC) -o foo.o -c foo.c
+%.o : %.c
+	$(CC) -o $@ -c $^
+
+.PHONY: clean
+clean:
+	$(RM) -rf $(EXE) $(OBJS)
+
+.PHONY:auto_val
+auto_val:first second third
+	@echo "\$$@ = $@"
+	@echo "$$^ = $^"
+	@echo "$$< = $<"
+first second third:
+
+.PHONY: makecmdgoals @
+makecmdgoals @:
+	@echo "\$$@ = $@"
+	@echo "MAKECMDGOALS = $(MAKECMDGOALS)"
+	@echo "CURDIR = $(CURDIR)"
