@@ -32,8 +32,15 @@ int main()
 	thread1_args.character = 'o';
 	thread1_args.count = 2;
 	pthread_create(&thread2_id, NULL, &char_print, &thread2_args);
-//	pthread_join(thread1_id, NULL);
-//	pthread_join(thread2_id, NULL);
-	sleep(10);
+	pthread_join(thread1_id, NULL);
+	pthread_join(thread2_id, NULL);
+        int i;
+        for (i = 0; i < 5; ++i)
+	        fputc('z', stderr);
+//	sleep(1);
+	struct char_print_parms *args;
+	args = &thread1_args;
+	args = &thread2_args;
+	(void)args;
 	return 0;
 }
